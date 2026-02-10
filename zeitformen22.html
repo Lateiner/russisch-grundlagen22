@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Zeitformen-Transformation</title>
+    <style>
+        :root {
+            --primary: #3f51b5; /* Indigo */
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --success: #4caf50;
+            --error: #f44336;
+            --arrow-color: #ff9800;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        /* Regel-Box */
+        .grammar-rule {
+            background-color: #e8eaf6;
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 40px;
+        }
+        
+        .grammar-rule h3 { margin-top: 0; color: var(--primary); }
+        
+        .rule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .rule-item {
+            background: #fff;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        .rule-item span { font-weight: bold; color: var(--primary); font-size: 1.2rem; }
+
+        /* Transformations-Liste */
+        .transformation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .task-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap; /* Wichtig für Mobile */
+            gap: 15px;
+            transition: box-shadow 0.3s;
+        }
+
+        .task-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            border-color: #bdbdbd;
+        }
+
+        /* Linke Seite: Präsens (Ausgangssituation) */
+        .present-tense {
+            flex: 1;
+            min-width: 250px;
+            color: #555;
+            font-size: 0.95rem;
+            background: #fafafa;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 3px solid #ccc;
+        }
+
+        .present-tense strong { color: #333; }
+
+        /* Der Pfeil */
+        .arrow-icon {
+            color: var(--arrow-color);
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        /* Rechte Seite: Präteritum (Ziel) */
+        .past-tense {
+            flex: 1.5; /* Nimmt mehr Platz ein */
+            min-width: 280px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .subject-highlight {
+            font-weight: bold;
+            color: var(--primary);
+            margin-right: 5px;
+        }
+
+        .verb-stem {
+            margin-left: 5px;
+        }
+
+        /* Dropdown Styling */
+        select.ending-select {
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 5px 10px;
+            margin: 0 5px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 70px;
+        }
+
+        select.ending-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        select.correct {
+            border-color: var(--success);
+            background-color: #e8f5e9;
+            color: var(--success);
+        }
+
+        select.incorrect {
+            border-color: var(--error);
+            background-color: #ffebee;
+        }
+
+        /* Gender Icons/Labels */
+        .gender-tag {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: white;
+            margin-bottom: 5px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+        .tag-m { background-color: #2196f3; } /* Blau */
+        .tag-f { background-color: #e91e63; } /* Pink */
+        .tag-n { background-color: #9c27b0; } /* Lila */
+        .tag-pl { background-color: #ff9800; } /* Orange */
+
+        /* Buttons */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .ctrl-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            min-width: 140px;
+        }
+
+        .btn-check { background-color: var(--primary); }
+        .btn-reset { background-color: #757575; }
+        .btn-solve { background-color: #ffb74d; color: #333; }
+
+        .feedback-area {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            min-height: 24px;
+        }
+
+        /* Responsives Verhalten für Mobile */
+        @media (max-width: 650px) {
+            .task-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .arrow-icon {
+                transform: rotate(90deg); /* Pfeil nach unten */
+                align-self: center;
+                margin: -10px 0;
+            }
+            .past-tense {
+                width: 100%;
+                border-top: 1px dashed #eee;
+                padding-top: 10px;
+            }
+            select.ending-select {
+                width: 100%; /* Volle Breite auf Handy für bessere Bedienung */
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Zeitformen-Transformation</h1>
+    <div class="subtitle">Setzen Sie die Sätze vom Präsens ins Präteritum (Vergangenheit).</div>
+
+    <div class="grammar-rule">
+        <h3>Regel: Vergangenheit</h3>
+        <p>Entfernen Sie die Endung <strong>-ть</strong> vom Infinitiv und fügen Sie hinzu:</p>
+        <div class="rule-grid">
+            <div class="rule-item"><span style="color:#2196f3">♂</span> Er (Он)<br><span>-л</span></div>
+            <div class="rule-item"><span style="color:#e91e63">♀</span> Sie (Она)<br><span>-ла</span></div>
+            <div class="rule-item"><span style="color:#9c27b0">⚪</span> Es (Оно)<br><span>-ло</span></div>
+            <div class="rule-item"><span style="color:#ff9800">👥</span> Wir/Ihr/Sie (Они)<br><span>-ли</span></div>
+        </div>
+    </div>
+
+    <div class="transformation-list">
+
+        <!-- Satz 1: Maskulin -->
+        <div class="task-card">
+            <div class="present-tense">
+                <span class="gender-tag tag-m">Masc</span>
+                Heute hört <strong>Anton</strong> Musik.<br>
+                <em>(Сегодня Антон слушает музыку.)</em>
+            </div>
+            <div class="arrow-icon">➜</div>
+            <div class="past-tense">
+                <span>Вчера <span class="subject-highlight">Антон</span> слуша</span>
+                <select class="ending-select" data-correct="л">
+                    <option value="">...</option>
+                    <option value="л">-л</option>
+                    <option value="ла">-ла</option>
+                    <option value="ло">-ло</option>
+                    <option value="ли">-ли</option>
+                </select>
+                <span>&nbsp;музыку.</span>
+            </div>
+        </div>
+
+        <!-- Satz 2: Feminin -->
+        <div class="task-card">
+            <div class="present-tense">
+                <span class="gender-tag tag-f">Fem</span>
+                <strong>Anna</strong> hört den Lärm nicht.<br>
+                <em>(Анна не слышит шум.)</em>
+            </div>
+            <div class="arrow-icon">➜</div>
+            <div class="past-tense">
+                <span>Раньше <span class="subject-highlight">Анна</span> не слыша</span>
+                <select class="ending-select" data-correct="ла">
+                    <option value="">...</option>
+                    <option value="л">-л</option>
+                    <option value="ла">-ла</option>
+                    <option value="ло">-ло</option>
+                    <option value="ли">-ли</option>
+                </select>
+                <span>&nbsp;шум.</span>
+            </div>
+        </div>
+
+        <!-- Satz 3: Plural -->
+        <div class="task-card">
+            <div class="present-tense">
+                <span class="gender-tag tag-pl">Pl</span>
+                <strong>Wir</strong> hören dem Lehrer zu.<br>
+                <em>(Мы слушаем учителя.)</em>
+            </div>
+            <div class="arrow-icon">➜</div>
+            <div class="past-tense">
+                <span>Вчера <span class="subject-highlight">мы</span> слуша</span>
+                <select class="ending-select" data-correct="ли">
+                    <option value="">...</option>
+                    <option value="л">-л</option>
+                    <option value="ла">-ла</option>
+                    <option value="ло">-ло</option>
+                    <option value="ли">-ли</option>
+                </select>
+                <span>&nbsp;учителя.</span>
+            </div>
+        </div>
+
+        <!-- Satz 4: Plural (Sie/Eltern) -->
+        <div class="task-card">
+            <div class="present-tense">
+                <span class="gender-tag tag-pl">Pl</span>
+                Die <strong>Eltern</strong> hören nichts.<br>
+                <em>(Родители ничего не слышат.)</em>
+            </div>
+            <div class="arrow-icon">➜</div>
+            <div class="past-tense">
+                <span>Тогда <span class="subject-highlight">родители</span> ничего не слыша</span>
+                <select class="ending-select" data-correct="ли">
+                    <option value="">...</option>
+                    <option value="л">-л</option>
+                    <option value="ла">-ла</option>
+                    <option value="ло">-ло</option>
+                    <option value="ли">-ли</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Satz 5: Feminin (Ich - Maria) -->
+        <div class="task-card">
+            <div class="present-tense">
+                <span class="gender-tag tag-f">Fem</span>
+                <strong>Ich (Maria)</strong> höre Radio.<br>
+                <em>(Я слушаю радио.)</em>
+            </div>
+            <div class="arrow-icon">➜</div>
+            <div class="past-tense">
+                <span>Утром <span class="subject-highlight">я</span> слуша</span>
+                <select class="ending-select" data-correct="ла">
+                    <option value="">...</option>
+                    <option value="л">-л</option>
+                    <option value="ла">-ла</option>
+                    <option value="ло">-ло</option>
+                    <option value="ли">-ли</option>
+                </select>
+                <span>&nbsp;радио.</span>
+            </div>
+        </div>
+
+        <!-- Satz 6: Neutrum (Das Echo) -->
+        <div class="task-card">
+            <div class="present-tense">
+                <span class="gender-tag tag-n">Neut</span>
+                Das <strong>Echo</strong> ist zu hören.<br>
+                <em>(Слышится эхо.)</em>
+            </div>
+            <div class="arrow-icon">➜</div>
+            <div class="past-tense">
+                <span>В горах <span class="subject-highlight">эхо</span> слыша</span>
+                <select class="ending-select" data-correct="ло">
+                    <option value="">...</option>
+                    <option value="л">-л</option>
+                    <option value="ла">-ла</option>
+                    <option value="ло">-ло</option>
+                    <option value="ли">-ли</option>
+                </select>
+                <span>сь.</span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="feedback-area" id="feedback"></div>
+
+    <div class="controls">
+        <button class="ctrl-btn btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="ctrl-btn btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="ctrl-btn btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    function checkAnswers() {
+        const selects = document.querySelectorAll('.ending-select');
+        let correctCount = 0;
+        let allFilled = true;
+
+        selects.forEach(select => {
+            const val = select.value;
+            const correct = select.getAttribute('data-correct');
+
+            // Reset styles
+            select.classList.remove('correct', 'incorrect');
+
+            if (val === "") {
+                allFilled = false;
+            } else if (val === correct) {
+                select.classList.add('correct');
+                correctCount++;
+            } else {
+                select.classList.add('incorrect');
+            }
+        });
+
+        const feedback = document.getElementById('feedback');
+        if (!allFilled) {
+            feedback.textContent = "Bitte ergänzen Sie alle Sätze.";
+            feedback.style.color = "var(--text-color)";
+        } else if (correctCount === selects.length) {
+            feedback.textContent = "Fantastisch! Alle Vergangenheitsformen sind korrekt.";
+            feedback.style.color = "var(--success)";
+        } else {
+            feedback.textContent = `${correctCount} von ${selects.length} richtig. Achten Sie auf das Geschlecht des Subjekts!`;
+            feedback.style.color = "var(--error)";
+        }
+    }
+
+    function resetTask() {
+        const selects = document.querySelectorAll('.ending-select');
+        selects.forEach(select => {
+            select.value = "";
+            select.classList.remove('correct', 'incorrect');
+        });
+        document.getElementById('feedback').textContent = "";
+    }
+
+    function showSolution() {
+        const selects = document.querySelectorAll('.ending-select');
+        selects.forEach(select => {
+            select.value = select.getAttribute('data-correct');
+            select.classList.remove('incorrect');
+            select.classList.add('correct');
+        });
+        
+        const feedback = document.getElementById('feedback');
+        feedback.textContent = "Lösung angezeigt.";
+        feedback.style.color = "var(--primary)";
+    }
+</script>
+
+</body>
+</html>
