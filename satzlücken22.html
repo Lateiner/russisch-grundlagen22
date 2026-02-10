@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Multiple Choice</title>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --primary-light: #c5cae9;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --success: #4caf50;
+            --error: #f44336;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        /* Quiz Container */
+        .quiz-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Einzelne Frage-Karte */
+        .question-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid transparent; /* Für Status-Farbe */
+            transition: transform 0.2s;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .gap {
+            display: inline-block;
+            min-width: 60px;
+            border-bottom: 2px solid var(--primary);
+            color: var(--primary);
+            text-align: center;
+            font-weight: bold;
+            padding: 0 5px;
+        }
+
+        .translation {
+            font-size: 0.9rem;
+            color: #757575;
+            margin-bottom: 20px;
+            font-style: italic;
+            display: block;
+        }
+
+        /* Optionen Raster */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+
+        /* Option Button Styling */
+        .option-btn {
+            background-color: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            padding: 12px 10px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            color: #444;
+            text-align: center;
+        }
+
+        .option-btn:hover {
+            background-color: #e0e0e0;
+            border-color: #bdbdbd;
+        }
+
+        /* Selected State (User Auswahl) */
+        .option-btn.selected {
+            background-color: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Feedback States (Nach Überprüfung) */
+        .option-btn.correct {
+            background-color: #e8f5e9 !important;
+            border-color: var(--success) !important;
+            color: var(--success) !important;
+            position: relative;
+        }
+        
+        .option-btn.incorrect {
+            background-color: #ffebee !important;
+            border-color: var(--error) !important;
+            color: var(--error) !important;
+            opacity: 0.7;
+        }
+
+        /* Markierung der richtigen Antwort bei Lösung anzeigen */
+        .option-btn.solution-mark {
+            border-color: var(--success);
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+        }
+
+        /* Steuerung */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .ctrl-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            min-width: 150px;
+            transition: opacity 0.2s;
+        }
+        .ctrl-btn:hover { opacity: 0.9; }
+
+        .btn-check { background-color: var(--primary); }
+        .btn-reset { background-color: #757575; }
+        .btn-solve { background-color: #ffb74d; color: #333; }
+
+        .feedback-area {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            min-height: 24px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        /* Mobile Optimierung */
+        @media (max-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr; /* Untereinander auf kleinen Handys */
+            }
+            .question-text {
+                font-size: 1.1rem;
+            }
+            .option-btn {
+                padding: 15px; /* Größere Touch-Fläche */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Multiple Choice: Verbformen</h1>
+    <div class="subtitle">Wählen Sie die einzig richtige Form für die Lücke.</div>
+
+    <div class="quiz-list" id="quizList">
+        
+        <!-- Frage 1: Grundbedeutung -->
+        <div class="question-card" data-correct="слушать">
+            <div class="question-text">1. Я люблю <span class="gap">_____</span> джаз.</div>
+            <span class="translation">(Ich liebe es, Jazz zu hören.)</span>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOption(this)">слушать</button>
+                <button class="option-btn" onclick="selectOption(this)">слышать</button>
+                <button class="option-btn" onclick="selectOption(this)">слышу</button>
+            </div>
+        </div>
+
+        <!-- Frage 2: Wahrnehmung (Fähigkeit) -->
+        <div class="question-card" data-correct="слышишь">
+            <div class="question-text">2. Ты <span class="gap">_____</span> эту птицу?</div>
+            <span class="translation">(Hörst du diesen Vogel?)</span>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOption(this)">слушаешь</button>
+                <button class="option-btn" onclick="selectOption(this)">слышаешь</button>
+                <button class="option-btn" onclick="selectOption(this)">слышишь</button>
+            </div>
+        </div>
+
+        <!-- Frage 3: Konjugation Slyshat (Plural Falle) -->
+        <div class="question-card" data-correct="слышат">
+            <div class="question-text">3. Собаки очень хорошо <span class="gap">_____</span>.</div>
+            <span class="translation">(Hunde hören sehr gut.)</span>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOption(this)">слышут</button>
+                <button class="option-btn" onclick="selectOption(this)">слышат</button>
+                <button class="option-btn" onclick="selectOption(this)">слушают</button>
+                <button class="option-btn" onclick="selectOption(this)">слышим</button>
+            </div>
+        </div>
+
+        <!-- Frage 4: Konjugation Slushat -->
+        <div class="question-card" data-correct="слушаем">
+            <div class="question-text">4. Мы внимательно <span class="gap">_____</span> подкаст.</div>
+            <span class="translation">(Wir hören uns den Podcast aufmerksam an.)</span>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOption(this)">слышим</button>
+                <button class="option-btn" onclick="selectOption(this)">слушим</button>
+                <button class="option-btn" onclick="selectOption(this)">слушаем</button>
+            </div>
+        </div>
+
+        <!-- Frage 5: Negation/Passiv -->
+        <div class="question-card" data-correct="слышу">
+            <div class="question-text">5. Извини, я ничего не <span class="gap">_____</span>.</div>
+            <span class="translation">(Entschuldige, ich höre nichts.)</span>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOption(this)">слушаю</button>
+                <button class="option-btn" onclick="selectOption(this)">слышу</button>
+                <button class="option-btn" onclick="selectOption(this)">слышаю</button>
+            </div>
+        </div>
+
+        <!-- Frage 6: Imperativ -->
+        <div class="question-card" data-correct="Слушай">
+            <div class="question-text">6. <span class="gap">_____</span> меня!</div>
+            <span class="translation">(Hör mir zu!)</span>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOption(this)">Слышь</button>
+                <button class="option-btn" onclick="selectOption(this)">Слушай</button>
+                <button class="option-btn" onclick="selectOption(this)">Слышишь</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="feedback-area" id="feedback"></div>
+
+    <div class="controls">
+        <button class="ctrl-btn btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="ctrl-btn btn-reset" onclick="resetQuiz()">Zurücksetzen</button>
+        <button class="ctrl-btn btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    // Funktion zum Auswählen einer Option
+    function selectOption(btn) {
+        // Finde den übergeordneten Options-Container
+        const container = btn.parentElement;
+        
+        // Entferne 'selected' von allen Geschwistern
+        const siblings = container.querySelectorAll('.option-btn');
+        siblings.forEach(sb => sb.classList.remove('selected', 'correct', 'incorrect'));
+        
+        // Markiere den geklickten Button
+        btn.classList.add('selected');
+
+        // Feedback zurücksetzen
+        document.getElementById('feedback').textContent = '';
+        document.getElementById('feedback').style.backgroundColor = 'transparent';
+    }
+
+    // Antworten überprüfen
+    function checkAnswers() {
+        const questions = document.querySelectorAll('.question-card');
+        let correctCount = 0;
+        let answeredCount = 0;
+
+        questions.forEach(card => {
+            const correctAnswer = card.getAttribute('data-correct');
+            const selectedBtn = card.querySelector('.option-btn.selected');
+            const allBtns = card.querySelectorAll('.option-btn');
+
+            // Reset vorheriger Status
+            allBtns.forEach(btn => btn.classList.remove('correct', 'incorrect'));
+
+            if (selectedBtn) {
+                answeredCount++;
+                if (selectedBtn.textContent === correctAnswer) {
+                    selectedBtn.classList.add('correct');
+                    correctCount++;
+                } else {
+                    selectedBtn.classList.add('incorrect');
+                }
+            }
+        });
+
+        const feedback = document.getElementById('feedback');
+        
+        if (answeredCount < questions.length) {
+            feedback.textContent = `Bitte beantworten Sie alle Fragen (${answeredCount}/${questions.length}).`;
+            feedback.style.color = "#333";
+            feedback.style.backgroundColor = "#fff3e0";
+        } else if (correctCount === questions.length) {
+            feedback.textContent = "Perfekt! Alle Antworten sind richtig.";
+            feedback.style.color = "#1b5e20";
+            feedback.style.backgroundColor = "#e8f5e9";
+        } else {
+            feedback.textContent = `Sie haben ${correctCount} von ${questions.length} richtig.`;
+            feedback.style.color = "#b71c1c";
+            feedback.style.backgroundColor = "#ffebee";
+        }
+    }
+
+    // Zurücksetzen
+    function resetQuiz() {
+        const buttons = document.querySelectorAll('.option-btn');
+        buttons.forEach(btn => {
+            btn.classList.remove('selected', 'correct', 'incorrect', 'solution-mark');
+        });
+        
+        const feedback = document.getElementById('feedback');
+        feedback.textContent = "";
+        feedback.style.backgroundColor = 'transparent';
+    }
+
+    // Lösung anzeigen
+    function showSolution() {
+        const questions = document.querySelectorAll('.question-card');
+        
+        questions.forEach(card => {
+            const correctAnswer = card.getAttribute('data-correct');
+            const btns = card.querySelectorAll('.option-btn');
+            
+            btns.forEach(btn => {
+                btn.classList.remove('selected', 'incorrect', 'correct');
+                if (btn.textContent === correctAnswer) {
+                    btn.classList.add('selected'); // Visuell als "gewählt"
+                    btn.classList.add('correct'); // Grün färben
+                }
+            });
+        });
+
+        const feedback = document.getElementById('feedback');
+        feedback.textContent = "Lösung angezeigt.";
+        feedback.style.color = "var(--primary)";
+        feedback.style.backgroundColor = "transparent";
+    }
+</script>
+
+</body>
+</html>
