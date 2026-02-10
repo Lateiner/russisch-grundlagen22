@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Bild-Zuordnung (10 Beispiele)</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --slushat-bg: #009688;
+            --slyshat-bg: #ff9800;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --success: #4caf50;
+            --error: #f44336;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 10px;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin: 10px 0 20px 0;
+            font-size: 1.5rem;
+        }
+
+        .instruction {
+            text-align: center;
+            background: #e8eaf6;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--primary);
+            font-size: 0.95rem;
+        }
+
+        /* --- Der "Werkzeugkasten" --- */
+        .verb-pool {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            border: 2px dashed #ccc;
+        }
+
+        .draggable-item {
+            padding: 6px 12px; /* Kleineres Padding */
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            font-size: 0.85rem; /* Kleinere Schrift */
+            transition: transform 0.1s;
+        }
+
+        .draggable-item:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+        }
+
+        .verb-slushat { background-color: var(--slushat-bg); }
+        .verb-slyshat { background-color: var(--slyshat-bg); }
+
+        /* --- Das Bilder-Raster (Kompakter) --- */
+        .grid-container {
+            display: grid;
+            /* Kleinere Karten: minmax auf 160px reduziert */
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .image-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid transparent;
+            transition: border-color 0.3s;
+        }
+
+        .image-area {
+            background-color: #eee;
+            height: 90px; /* Reduzierte Höhe */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem; /* Kleinere Emojis */
+            position: relative;
+        }
+        
+        .image-desc {
+            padding: 5px;
+            text-align: center;
+            font-size: 0.8rem; /* Kleinere Beschreibung */
+            color: #666;
+            border-bottom: 1px solid #eee;
+            line-height: 1.2;
+            min-height: 35px; /* Damit Zeilenumbruch das Layout nicht sprengt */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dropzone {
+            flex-grow: 1;
+            min-height: 50px; /* Reduzierte Dropzone-Höhe */
+            background-color: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top: 1px dashed #ddd;
+            padding: 5px;
+            transition: background 0.3s;
+        }
+
+        .dropzone.drag-over {
+            background-color: #e3f2fd;
+            border-color: var(--primary);
+        }
+
+        /* Feedback Styles */
+        .image-card.correct { border-color: var(--success); }
+        .image-card.correct .dropzone { background-color: #e8f5e9; }
+        .image-card.wrong { border-color: var(--error); }
+        .image-card.wrong .dropzone { background-color: #ffebee; }
+
+        /* --- Buttons --- */
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .ctrl-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            min-width: 120px;
+            transition: opacity 0.2s;
+        }
+        .ctrl-btn:hover { opacity: 0.9; }
+
+        .btn-check { background-color: var(--primary); }
+        .btn-reset { background-color: #757575; }
+        .btn-solve { background-color: #ffb74d; color: #333; }
+
+        .feedback-text {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            min-height: 20px;
+        }
+
+        /* Mobile Anpassungen */
+        @media (max-width: 600px) {
+            .verb-pool { position: sticky; top: 0; z-index: 100; border-bottom: 2px solid #ccc; padding: 10px; }
+            .image-area { height: 70px; font-size: 2.5rem; }
+            .grid-container { grid-template-columns: repeat(2, 1fr); } /* 2 Spalten auf Handy */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Bild-Zuordnung: 10 Beispiele</h1>
+    
+    <div class="instruction">
+        Ziehen Sie das passende Verb auf das Bild.<br>
+        <strong>СЛУШАТЬ</strong> (Aktiv/Zuhören) vs. <strong>СЛЫШАТЬ</strong> (Passiv/Wahrnehmen)
+    </div>
+
+    <!-- Der Pool mit den ziehbaren Verben (5x Slushat, 5x Slyshat) -->
+    <div class="verb-pool" id="verbPool">
+        <div class="draggable-item verb-slushat" draggable="true" data-verb="slushat">СЛУШАТЬ</div>
+        <div class="draggable-item verb-slyshat" draggable="true" data-verb="slyshat">СЛЫШАТЬ</div>
+        <div class="draggable-item verb-slushat" draggable="true" data-verb="slushat">СЛУШАТЬ</div>
+        <div class="draggable-item verb-slyshat" draggable="true" data-verb="slyshat">СЛЫШАТЬ</div>
+        <div class="draggable-item verb-slushat" draggable="true" data-verb="slushat">СЛУШАТЬ</div>
+        <div class="draggable-item verb-slyshat" draggable="true" data-verb="slyshat">СЛЫШАТЬ</div>
+        <div class="draggable-item verb-slushat" draggable="true" data-verb="slushat">СЛУШАТЬ</div>
+        <div class="draggable-item verb-slyshat" draggable="true" data-verb="slyshat">СЛЫШАТЬ</div>
+        <div class="draggable-item verb-slushat" draggable="true" data-verb="slushat">СЛУШАТЬ</div>
+        <div class="draggable-item verb-slyshat" draggable="true" data-verb="slyshat">СЛЫШАТЬ</div>
+    </div>
+
+    <!-- Das Raster mit 10 Karten -->
+    <div class="grid-container">
+        
+        <!-- 1. Kopfhörer (Aktiv) -->
+        <div class="image-card" data-correct="slushat">
+            <div class="image-area">🎧</div>
+            <div class="image-desc">Musik genießen</div>
+            <div class="dropzone"></div>
+        </div>
+
+        <!-- 2. Donner (Passiv) -->
+        <div class="image-card" data-correct="slyshat">
+            <div class="image-area">⚡</div>
+            <div class="image-desc">Einen Knall hören</div>
+            <div class="dropzone"></div>
+        </div>
+
+        <!-- 3. Arzt (Aktiv) -->
+        <div class="image-card" data-correct="slushat">
+            <div class="image-area">👨‍⚕️</div>
+            <div class="image-desc">Herz abhören</div>
+            <div class="dropzone"></div>
+        </div>
+
+        <!-- 4. Opa (Passiv) -->
+        <div class="image-card" data-correct="slyshat">
+            <div class="image-area">👴👂</div>
+            <div class="image-desc">Schlecht hören können</div>
+            <div class="dropzone"></div>
+        </div>
+
+        <!-- 5. Vorlesung (Aktiv) -->
+        <div class="image-card" data-correct="slushat">
+            <div class="image-area">👩‍🏫</div>
+            <div class="image-desc">Der Lehrerin zuhören</div>
+            <div class="dropzone"></div>
+        </div>
+
+        <!-- 6. Baustelle (Passiv) -->
+        <div class="image-card" data-correct="slyshat">
+            <div class="image-area">🚧</div>
+            <div class="image-desc">Baulärm wahrnehmen</div>
+            <div class="dropzone"></div>
+        </div>
+
+        <!-- 7. Radio (Aktiv) -->
+        <div class="image-card" data-correct="slushat">
+            <div class="image-area">📻</div>
+            <div class="image-desc">Radio hören (gewollt)</div>
+            <div class="dropzone"></div>
+        </div>
+
+        <!-- 8. Wecker (Passiv) -->
+        <div class="image-card" data-correct="slyshat">
+            <div class="image-area">⏰</div>
+            <div class="image-desc">Den Wecker hören</div>
+            <div class="dropzone"></div>
+        </div>
+
+        <!-- 9. Vögel (Passiv) -->
+        <div class="image-card" data-correct="slyshat">
+            <div class="image-area">🐦</div>
+            <div class="image-desc">Vogelgezwitscher (im Hintergrund)</div>
+            <div class="dropzone"></div>
+        </div>
+
+        <!-- 10. Interview (Aktiv) -->
+        <div class="image-card" data-correct="slushat">
+            <div class="image-area">🎤</div>
+            <div class="image-desc">Ein Interview anhören</div>
+            <div class="dropzone"></div>
+        </div>
+
+    </div>
+
+    <div class="controls">
+        <button class="ctrl-btn btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="ctrl-btn btn-reset" onclick="resetGame()">Zurücksetzen</button>
+        <button class="ctrl-btn btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+    <div class="feedback-text" id="feedback"></div>
+
+</div>
+
+<script>
+    const draggables = document.querySelectorAll('.draggable-item');
+    const dropzones = document.querySelectorAll('.dropzone');
+    const verbPool = document.getElementById('verbPool');
+
+    let draggedItem = null;
+
+    // --- Drag Events ---
+    draggables.forEach(draggable => {
+        draggable.addEventListener('dragstart', () => {
+            draggedItem = draggable;
+            setTimeout(() => draggable.style.opacity = '0.5', 0);
+        });
+
+        draggable.addEventListener('dragend', () => {
+            draggedItem = null;
+            draggable.style.opacity = '1';
+        });
+    });
+
+    // --- Dropzone Events ---
+    dropzones.forEach(zone => {
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault(); 
+            zone.classList.add('drag-over');
+        });
+
+        zone.addEventListener('dragleave', () => {
+            zone.classList.remove('drag-over');
+        });
+
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            zone.classList.remove('drag-over');
+            
+            if (zone.children.length > 0) {
+                const existingItem = zone.children[0];
+                verbPool.appendChild(existingItem);
+            }
+
+            if (draggedItem) {
+                zone.appendChild(draggedItem);
+            }
+        });
+    });
+
+    // Erlaubt das Zurückziehen in den Pool
+    verbPool.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        verbPool.classList.add('drag-over');
+    });
+    
+    verbPool.addEventListener('dragleave', () => {
+        verbPool.classList.remove('drag-over');
+    });
+
+    verbPool.addEventListener('drop', (e) => {
+        e.preventDefault();
+        verbPool.classList.remove('drag-over');
+        if (draggedItem) {
+            verbPool.appendChild(draggedItem);
+        }
+    });
+
+    // --- Logik Funktionen ---
+
+    function checkAnswers() {
+        const cards = document.querySelectorAll('.image-card');
+        let correctCount = 0;
+        let allFilled = true;
+
+        cards.forEach(card => {
+            const dropzone = card.querySelector('.dropzone');
+            const item = dropzone.querySelector('.draggable-item');
+            
+            card.classList.remove('correct', 'wrong');
+
+            if (!item) {
+                allFilled = false;
+                return;
+            }
+
+            const droppedVerb = item.getAttribute('data-verb');
+            const correctVerb = card.getAttribute('data-correct');
+
+            if (droppedVerb === correctVerb) {
+                card.classList.add('correct');
+                correctCount++;
+            } else {
+                card.classList.add('wrong');
+            }
+        });
+
+        const feedback = document.getElementById('feedback');
+        if (!allFilled) {
+            feedback.textContent = "Bitte füllen Sie alle 10 Felder aus.";
+            feedback.style.color = "#333";
+        } else if (correctCount === cards.length) {
+            feedback.textContent = "Hervorragend! Alle 10 richtig.";
+            feedback.style.color = "var(--success)";
+        } else {
+            feedback.textContent = `${correctCount} von ${cards.length} richtig.`;
+            feedback.style.color = "var(--error)";
+        }
+    }
+
+    function resetGame() {
+        draggables.forEach(item => {
+            verbPool.appendChild(item);
+        });
+
+        document.querySelectorAll('.image-card').forEach(card => {
+            card.classList.remove('correct', 'wrong');
+        });
+
+        document.getElementById('feedback').textContent = "";
+    }
+
+    function showSolution() {
+        resetGame(); 
+
+        const cards = document.querySelectorAll('.image-card');
+        const items = Array.from(document.querySelectorAll('.draggable-item'));
+
+        cards.forEach(card => {
+            const correctVerb = card.getAttribute('data-correct');
+            const dropzone = card.querySelector('.dropzone');
+
+            // Finde das erste passende Verb im Pool
+            const matchIndex = items.findIndex(i => i.getAttribute('data-verb') === correctVerb && i.parentElement === verbPool);
+            
+            if (matchIndex > -1) {
+                dropzone.appendChild(items[matchIndex]);
+                card.classList.add('correct');
+            }
+        });
+
+        const feedback = document.getElementById('feedback');
+        feedback.textContent = "Lösung angezeigt.";
+        feedback.style.color = "var(--primary)";
+    }
+
+</script>
+
+</body>
+</html>
