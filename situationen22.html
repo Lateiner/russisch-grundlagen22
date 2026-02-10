@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: слушать vs. слышать (Semantik)</title>
+    <style>
+        :root {
+            --primary: #3f51b5; /* Indigo */
+            --primary-dark: #303f9f;
+            --slushat-color: #009688; /* Teal für Aktiv */
+            --slyshat-color: #ff9800; /* Orange für Passiv */
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --success: #4caf50;
+            --error: #f44336;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+            background: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        /* Grid für die Aufgaben */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            transition: transform 0.2s ease;
+        }
+
+        .task-item:hover {
+            border-color: #bdbdbd;
+        }
+
+        .scenario-text {
+            flex: 1;
+            font-size: 1.05rem;
+            padding-right: 20px;
+        }
+
+        .icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        /* Button Gruppe */
+        .choice-container {
+            display: flex;
+            gap: 10px;
+            min-width: 260px; /* Stellt sicher, dass Buttons genug Platz haben */
+        }
+
+        .choice-btn {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            background: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            color: #555;
+            text-align: center;
+        }
+
+        .choice-btn:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Status: Ausgewählt */
+        .choice-btn.selected[data-value="slushat"] {
+            background-color: var(--slushat-color);
+            color: white;
+            border-color: var(--slushat-color);
+        }
+
+        .choice-btn.selected[data-value="slyshat"] {
+            background-color: var(--slyshat-color);
+            color: white;
+            border-color: var(--slyshat-color);
+        }
+
+        /* Status: Feedback Richtig/Falsch */
+        .choice-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: white !important;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
+
+        .choice-btn.wrong {
+            background-color: var(--error) !important;
+            border-color: var(--error) !important;
+            color: white !important;
+            opacity: 0.6;
+        }
+
+        /* Responsives Design */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            
+            .task-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .scenario-text {
+                padding-right: 0;
+                width: 100%;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 10px;
+            }
+
+            .choice-container {
+                width: 100%;
+                min-width: auto;
+            }
+
+            .choice-btn {
+                padding: 12px; /* Größere Touch-Fläche */
+            }
+        }
+
+        /* Steuerungs-Buttons */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .ctrl-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: filter 0.2s;
+            color: white;
+            min-width: 150px;
+        }
+
+        .ctrl-btn:hover { filter: brightness(110%); }
+        .btn-check { background-color: var(--primary); }
+        .btn-reset { background-color: #757575; }
+        .btn-solve { background-color: #ffb74d; color: #333; }
+
+        .feedback-area {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            min-height: 1.5em;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>слушать vs. слышать</h1>
+    
+    <div class="instruction">
+        <strong>Aufgabe:</strong> Entscheiden Sie anhand der Situation: Handelt es sich um aktives Zuhören (слушать) oder um passives Wahrnehmen/Können (слышать)?
+    </div>
+
+    <div class="task-list" id="taskList">
+        <!-- Aufgabe 1 -->
+        <div class="task-item" data-correct="slushat">
+            <div class="scenario-text">
+                <span class="icon">🎧</span> Jemand trägt Kopfhörer und genießt Musik.
+            </div>
+            <div class="choice-container">
+                <button class="choice-btn" onclick="selectOption(this, 'slushat')" data-value="slushat">слушать</button>
+                <button class="choice-btn" onclick="selectOption(this, 'slyshat')" data-value="slyshat">слышать</button>
+            </div>
+        </div>
+
+        <!-- Aufgabe 2 -->
+        <div class="task-item" data-correct="slyshat">
+            <div class="scenario-text">
+                <span class="icon">⚡</span> Ein lauter Donner erschreckt dich plötzlich.
+            </div>
+            <div class="choice-container">
+                <button class="choice-btn" onclick="selectOption(this, 'slushat')" data-value="slushat">слушать</button>
+                <button class="choice-btn" onclick="selectOption(this, 'slyshat')" data-value="slyshat">слышать</button>
+            </div>
+        </div>
+
+        <!-- Aufgabe 3 -->
+        <div class="task-item" data-correct="slushat">
+            <div class="scenario-text">
+                <span class="icon">👨‍🏫</span> Der Lehrer sagt: „Bitte passt jetzt gut auf!“
+            </div>
+            <div class="choice-container">
+                <button class="choice-btn" onclick="selectOption(this, 'slushat')" data-value="slushat">слушать</button>
+                <button class="choice-btn" onclick="selectOption(this, 'slyshat')" data-value="slyshat">слышать</button>
+            </div>
+        </div>
+
+        <!-- Aufgabe 4 -->
+        <div class="task-item" data-correct="slyshat">
+            <div class="scenario-text">
+                <span class="icon">👂</span> Der Nachbar bohrt. Du willst es nicht, aber du nimmst es wahr.
+            </div>
+            <div class="choice-container">
+                <button class="choice-btn" onclick="selectOption(this, 'slushat')" data-value="slushat">слушать</button>
+                <button class="choice-btn" onclick="selectOption(this, 'slyshat')" data-value="slyshat">слышать</button>
+            </div>
+        </div>
+
+        <!-- Aufgabe 5 -->
+        <div class="task-item" data-correct="slyshat">
+            <div class="scenario-text">
+                <span class="icon">👵</span> Oma hat ihr Hörgerät vergessen. Sie versteht dich akustisch nicht.
+            </div>
+            <div class="choice-container">
+                <button class="choice-btn" onclick="selectOption(this, 'slushat')" data-value="slushat">слушать</button>
+                <button class="choice-btn" onclick="selectOption(this, 'slyshat')" data-value="slyshat">слышать</button>
+            </div>
+        </div>
+
+        <!-- Aufgabe 6 -->
+        <div class="task-item" data-correct="slushat">
+            <div class="scenario-text">
+                <span class="icon">🏥</span> Der Arzt horcht mit dem Stethoskop dein Herz ab.
+            </div>
+            <div class="choice-container">
+                <button class="choice-btn" onclick="selectOption(this, 'slushat')" data-value="slushat">слушать</button>
+                <button class="choice-btn" onclick="selectOption(this, 'slyshat')" data-value="slyshat">слышать</button>
+            </div>
+        </div>
+        
+         <!-- Aufgabe 7 -->
+         <div class="task-item" data-correct="slyshat">
+            <div class="scenario-text">
+                <span class="icon">📰</span> Hast du schon die Neuigkeiten über den neuen Film... (Info erhalten)?
+            </div>
+            <div class="choice-container">
+                <button class="choice-btn" onclick="selectOption(this, 'slushat')" data-value="slushat">слушать</button>
+                <button class="choice-btn" onclick="selectOption(this, 'slyshat')" data-value="slyshat">слышать</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="feedback-area" id="feedback"></div>
+
+    <div class="controls">
+        <button class="ctrl-btn btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="ctrl-btn btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="ctrl-btn btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    // Auswahl-Logik (wie Radio-Buttons, aber visuell angepasst)
+    function selectOption(btn, value) {
+        // Findet den Container der aktuellen Zeile
+        const container = btn.parentElement;
+        
+        // Entfernt 'selected' von allen Buttons in dieser Zeile
+        const siblings = container.querySelectorAll('.choice-btn');
+        siblings.forEach(sb => sb.classList.remove('selected', 'correct', 'wrong'));
+        
+        // Fügt 'selected' zum geklickten Button hinzu
+        btn.classList.add('selected');
+        
+        // Feedback-Text zurücksetzen bei neuer Eingabe
+        document.getElementById('feedback').textContent = '';
+        document.getElementById('feedback').className = 'feedback-area';
+    }
+
+    // Überprüfen-Logik
+    function checkAnswers() {
+        const rows = document.querySelectorAll('.task-item');
+        let correctCount = 0;
+        let allAnswered = true;
+
+        rows.forEach(row => {
+            const correctAnswer = row.getAttribute('data-correct');
+            const selectedBtn = row.querySelector('.choice-btn.selected');
+
+            // Reset vorheriger visueller Feedback-Klassen
+            row.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('correct', 'wrong'));
+
+            if (!selectedBtn) {
+                allAnswered = false;
+                return; // Nächste Iteration
+            }
+
+            const selectedValue = selectedBtn.getAttribute('data-value');
+
+            if (selectedValue === correctAnswer) {
+                selectedBtn.classList.add('correct');
+                correctCount++;
+            } else {
+                selectedBtn.classList.add('wrong');
+            }
+        });
+
+        const feedbackEl = document.getElementById('feedback');
+        if (!allAnswered) {
+            feedbackEl.textContent = "Bitte beantworten Sie alle Fragen.";
+            feedbackEl.style.color = "var(--text-color)";
+        } else if (correctCount === rows.length) {
+            feedbackEl.textContent = "Perfekt! Alle Situationen richtig erkannt.";
+            feedbackEl.style.color = "var(--success)";
+        } else {
+            feedbackEl.textContent = `Sie haben ${correctCount} von ${rows.length} richtig.`;
+            feedbackEl.style.color = "var(--error)";
+        }
+    }
+
+    // Zurücksetzen-Logik
+    function resetTask() {
+        const buttons = document.querySelectorAll('.choice-btn');
+        buttons.forEach(btn => {
+            btn.classList.remove('selected', 'correct', 'wrong');
+        });
+        document.getElementById('feedback').textContent = '';
+    }
+
+    // Lösung anzeigen
+    function showSolution() {
+        const rows = document.querySelectorAll('.task-item');
+        
+        rows.forEach(row => {
+            const correctAnswer = row.getAttribute('data-correct');
+            const buttons = row.querySelectorAll('.choice-btn');
+            
+            // Erst alles säubern
+            buttons.forEach(btn => btn.classList.remove('selected', 'correct', 'wrong'));
+
+            // Den richtigen Button markieren
+            buttons.forEach(btn => {
+                if (btn.getAttribute('data-value') === correctAnswer) {
+                    btn.classList.add('selected'); // Visuell als ausgewählt markieren
+                    btn.classList.add('correct');  // Visuell als richtig markieren
+                }
+            });
+        });
+
+        const feedbackEl = document.getElementById('feedback');
+        feedbackEl.textContent = "Lösung angezeigt.";
+        feedbackEl.style.color = "var(--primary)";
+    }
+</script>
+
+</body>
+</html>
