@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Diktat der Endungen</title>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --primary-dark: #303f9f;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --success: #4caf50;
+            --error: #f44336;
+            --key-bg: #e0e0e0;
+            --key-text: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            /* Platz unten für die Tastatur auf Mobile */
+            padding-bottom: 220px; 
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        /* Anleitung */
+        .instruction-box {
+            background-color: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary);
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        /* Aufgaben Liste */
+        .dictation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .dictation-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 2px solid transparent;
+            transition: border-color 0.3s;
+        }
+
+        .dictation-card.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(63, 81, 181, 0.2);
+        }
+
+        /* Play Button */
+        .play-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .play-btn:hover { background-color: var(--primary-dark); }
+        .play-btn:active { transform: scale(0.95); }
+
+        /* Textbereich */
+        .sentence-area {
+            flex-grow: 1;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .stem {
+            color: #333;
+        }
+
+        /* Das Eingabefeld (Gap) */
+        .gap-input {
+            border: none;
+            border-bottom: 2px solid #999;
+            background-color: #f5f5f5;
+            width: 80px;
+            padding: 5px;
+            font-size: 1.2rem;
+            font-family: inherit;
+            text-align: center;
+            color: var(--primary);
+            font-weight: bold;
+            border-radius: 4px 4px 0 0;
+            cursor: pointer;
+        }
+
+        .gap-input:focus, .gap-input.focused {
+            outline: none;
+            border-bottom-color: var(--primary);
+            background-color: #e8eaf6;
+        }
+
+        .gap-input.correct {
+            background-color: #e8f5e9;
+            border-bottom-color: var(--success);
+            color: var(--success);
+        }
+
+        .gap-input.incorrect {
+            background-color: #ffebee;
+            border-bottom-color: var(--error);
+            color: var(--error);
+        }
+
+        .translation {
+            width: 100%;
+            font-size: 0.85rem;
+            color: #777;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        /* --- Virtuelle Tastatur (Sticky Bottom) --- */
+        .keyboard-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #eceff1;
+            padding: 10px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .keyboard-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .keys-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 5px;
+            max-width: 600px;
+        }
+
+        .key {
+            background-color: white;
+            border: 1px solid #cfd8dc;
+            border-radius: 6px;
+            min-width: 36px;
+            height: 44px; /* Touch-friendly height */
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            box-shadow: 0 2px 0 #b0bec5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            transition: all 0.1s;
+        }
+
+        .key:active {
+            transform: translateY(2px);
+            box-shadow: none;
+            background-color: #f5f5f5;
+        }
+
+        .key-action {
+            background-color: #cfd8dc;
+            font-size: 0.9rem;
+            min-width: 50px;
+        }
+        
+        .key-backspace {
+            color: var(--error);
+        }
+
+        /* Buttons Control Area (oberhalb der Tastatur) */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .ctrl-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            min-width: 140px;
+        }
+
+        .btn-check { background-color: var(--primary); }
+        .btn-reset { background-color: #757575; }
+        .btn-solve { background-color: #ffb74d; color: #333; }
+
+        .feedback-area {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 24px;
+        }
+
+        /* Responsive Anpassungen */
+        @media (min-width: 800px) {
+            body { padding-bottom: 40px; } /* Weniger Padding auf Desktop */
+            .keyboard-container {
+                position: relative; /* Im Flow auf Desktop */
+                background: none;
+                box-shadow: none;
+                margin-top: 40px;
+                padding: 20px;
+                border-top: 2px solid #eee;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .dictation-card { padding: 15px; }
+            .sentence-area { font-size: 1.1rem; }
+            .key { min-width: 32px; height: 42px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Diktat: Endungen</h1>
+    <div class="subtitle">Hören Sie die Sätze und tippen Sie die fehlenden Endungen ein.</div>
+
+    <div class="instruction-box">
+        <strong>So geht's:</strong>
+        <ol style="margin-top:5px; margin-bottom:0; padding-left:20px;">
+            <li>Klicken Sie auf 🔊, um den Satz zu hören.</li>
+            <li>Tippen Sie auf das Eingabefeld (es wird blau).</li>
+            <li>Nutzen Sie die <strong>Bildschirm-Tastatur</strong> unten, um die Endung zu tippen.</li>
+            <li>Achten Sie auf <strong>-ат/-ят</strong> (2. Konj.) vs. <strong>-ут/-ют</strong> (1. Konj.).</li>
+        </ol>
+    </div>
+
+    <div class="dictation-list">
+
+        <!-- Satz 1: Слушают (1. Konj Plural) -->
+        <div class="dictation-card" onclick="focusInput(0)">
+            <button class="play-btn" onclick="speakRussian('Они внимательно слушают радио', event)">🔊</button>
+            <div class="sentence-area">
+                <span class="stem">Они внимательно слуша</span>
+                <input type="text" class="gap-input" readonly data-correct="ют" id="input-0">
+                <div class="translation">(Sie hören aufmerksam Radio.)</div>
+            </div>
+        </div>
+
+        <!-- Satz 2: Слышат (2. Konj Plural - Ausnahme) -->
+        <div class="dictation-card" onclick="focusInput(1)">
+            <button class="play-btn" onclick="speakRussian('Они плохо слышат', event)">🔊</button>
+            <div class="sentence-area">
+                <span class="stem">Они плохо слыш</span>
+                <input type="text" class="gap-input" readonly data-correct="ат" id="input-1">
+                <div class="translation">(Sie hören schlecht.)</div>
+            </div>
+        </div>
+
+        <!-- Satz 3: Слушаете (1. Konj Ihr) -->
+        <div class="dictation-card" onclick="focusInput(2)">
+            <button class="play-btn" onclick="speakRussian('Что вы слушаете?', event)">🔊</button>
+            <div class="sentence-area">
+                <span class="stem">Что вы слуша</span>
+                <input type="text" class="gap-input" readonly data-correct="ете" id="input-2">
+                <div class="translation">(Was hört ihr?)</div>
+            </div>
+        </div>
+
+        <!-- Satz 4: Слышите (2. Konj Ihr) -->
+        <div class="dictation-card" onclick="focusInput(3)">
+            <button class="play-btn" onclick="speakRussian('Вы меня слышите?', event)">🔊</button>
+            <div class="sentence-area">
+                <span class="stem">Вы меня слыш</span>
+                <input type="text" class="gap-input" readonly data-correct="ите" id="input-3">
+                <div class="translation">(Hört ihr mich?)</div>
+            </div>
+        </div>
+
+        <!-- Satz 5: Слушаю (1. Konj Ich) -->
+        <div class="dictation-card" onclick="focusInput(4)">
+            <button class="play-btn" onclick="speakRussian('Я слушаю музыку', event)">🔊</button>
+            <div class="sentence-area">
+                <span class="stem">Я слуша</span>
+                <input type="text" class="gap-input" readonly data-correct="ю" id="input-4">
+                <div class="translation">(Ich höre Musik.)</div>
+            </div>
+        </div>
+
+        <!-- Satz 6: Слышу (2. Konj Ich) -->
+        <div class="dictation-card" onclick="focusInput(5)">
+            <button class="play-btn" onclick="speakRussian('Я слышу голос', event)">🔊</button>
+            <div class="sentence-area">
+                <span class="stem">Я слыш</span>
+                <input type="text" class="gap-input" readonly data-correct="у" id="input-5">
+                <div class="translation">(Ich höre eine Stimme.)</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="feedback-area" id="feedback"></div>
+
+    <div class="controls">
+        <button class="ctrl-btn btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="ctrl-btn btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="ctrl-btn btn-solve" onclick="showSolution()">Lösung</button>
+    </div>
+</div>
+
+<!-- Die virtuelle Tastatur -->
+<div class="keyboard-container">
+    <div class="keyboard-label">Kyrillische Eingabe</div>
+    <div class="keys-row">
+        <!-- Vokale für Endungen -->
+        <button class="key" onclick="typeChar('а')">а</button>
+        <button class="key" onclick="typeChar('е')">е</button>
+        <button class="key" onclick="typeChar('и')">и</button>
+        <button class="key" onclick="typeChar('у')">у</button>
+        <button class="key" onclick="typeChar('ю')">ю</button>
+        <button class="key" onclick="typeChar('я')">я</button>
+    </div>
+    <div class="keys-row">
+        <!-- Konsonanten für Endungen -->
+        <button class="key" onclick="typeChar('м')">м</button>
+        <button class="key" onclick="typeChar('т')">т</button>
+        <button class="key" onclick="typeChar('ш')">ш</button>
+        <button class="key" onclick="typeChar('ь')">ь</button>
+        <!-- Aktionen -->
+        <button class="key key-action key-backspace" onclick="backspace()">⌫</button>
+    </div>
+</div>
+
+<script>
+    let activeInputId = null;
+
+    // Initialisiere erstes Feld als aktiv
+    document.addEventListener('DOMContentLoaded', () => {
+        // Optional: Fokus auf erstes Feld setzen oder warten auf User-Klick
+    });
+
+    // TTS Funktion
+    function speakRussian(text, event) {
+        if(event) event.stopPropagation(); // Damit nicht der Fokus auf das Input gesetzt wird beim Audio-Klick
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ru-RU';
+            utterance.rate = 0.85; // Langsam
+            window.speechSynthesis.speak(utterance);
+        } else {
+            alert("Audio nicht verfügbar.");
+        }
+    }
+
+    // Input Fokus Management
+    function focusInput(index) {
+        // Entferne 'focused' Klasse von allen
+        document.querySelectorAll('.gap-input').forEach(el => el.classList.remove('focused'));
+        document.querySelectorAll('.dictation-card').forEach(el => el.classList.remove('active'));
+
+        const input = document.getElementById(`input-${index}`);
+        const card = input.closest('.dictation-card');
+        
+        input.classList.add('focused');
+        card.classList.add('active');
+        activeInputId = `input-${index}`;
+    }
+
+    // Tastatur Logik
+    function typeChar(char) {
+        if (!activeInputId) {
+            // Wenn nichts ausgewählt ist, wähle das erste Feld
+            focusInput(0);
+        }
+        
+        const input = document.getElementById(activeInputId);
+        // Max Länge begrenzen (Endungen sind kurz)
+        if (input.value.length < 4) {
+            input.value += char;
+            // Entferne Feedback Farben beim Tippen
+            input.classList.remove('correct', 'incorrect');
+        }
+    }
+
+    function backspace() {
+        if (activeInputId) {
+            const input = document.getElementById(activeInputId);
+            input.value = input.value.slice(0, -1);
+            input.classList.remove('correct', 'incorrect');
+        }
+    }
+
+    // Überprüfung
+    function checkAnswers() {
+        const inputs = document.querySelectorAll('.gap-input');
+        let correctCount = 0;
+        let allFilled = true;
+
+        inputs.forEach(input => {
+            const val = input.value.trim().toLowerCase();
+            const correct = input.dataset.correct;
+
+            if (val === "") allFilled = false;
+
+            if (val === correct) {
+                input.classList.add('correct');
+                input.classList.remove('incorrect');
+                correctCount++;
+            } else {
+                input.classList.add('incorrect');
+                input.classList.remove('correct');
+            }
+        });
+
+        const feedback = document.getElementById('feedback');
+        if (!allFilled) {
+            feedback.textContent = "Bitte füllen Sie alle Felder aus.";
+            feedback.style.color = "var(--text-color)";
+        } else if (correctCount === inputs.length) {
+            feedback.textContent = "Perfekt! Alle Endungen richtig gehört und geschrieben.";
+            feedback.style.color = "var(--success)";
+        } else {
+            feedback.textContent = `${correctCount} von ${inputs.length} richtig. Achten Sie auf die Konjugation!`;
+            feedback.style.color = "var(--error)";
+        }
+    }
+
+    function resetTask() {
+        const inputs = document.querySelectorAll('.gap-input');
+        inputs.forEach(input => {
+            input.value = "";
+            input.classList.remove('correct', 'incorrect');
+        });
+        document.getElementById('feedback').textContent = "";
+        focusInput(0);
+    }
+
+    function showSolution() {
+        const inputs = document.querySelectorAll('.gap-input');
+        inputs.forEach(input => {
+            input.value = input.dataset.correct;
+            input.classList.remove('incorrect');
+            input.classList.add('correct');
+        });
+        
+        const feedback = document.getElementById('feedback');
+        feedback.textContent = "Lösungen eingetragen.";
+        feedback.style.color = "var(--primary)";
+    }
+
+    // Setze initialen Fokus
+    focusInput(0);
+
+</script>
+
+</body>
+</html>
