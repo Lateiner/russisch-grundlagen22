@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Fehleranalyse</title>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --success: #4caf50;
+            --error: #f44336;
+            --neutral: #9e9e9e;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        /* Aufgaben-Liste */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Die Karte für einen Satz */
+        .sentence-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid transparent;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s;
+        }
+
+        /* Satzbereich */
+        .sentence-text {
+            flex: 2;
+            min-width: 250px;
+            font-size: 1.1rem;
+        }
+
+        .highlight-verb {
+            font-weight: bold;
+            color: var(--primary);
+            background-color: #e8eaf6;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .translation {
+            display: block;
+            font-size: 0.85rem;
+            color: #757575;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        /* Bewertungs-Bereich (Richtig/Falsch Buttons) */
+        .assessment-controls {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+            min-width: 160px;
+            justify-content: flex-end;
+        }
+
+        .toggle-btn {
+            padding: 8px 16px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.2s;
+            flex: 1;
+            text-align: center;
+        }
+
+        .toggle-btn:hover { background-color: #f5f5f5; }
+
+        /* Status-Klassen für Buttons */
+        .toggle-btn.btn-correct.active {
+            background-color: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+        
+        .toggle-btn.btn-wrong.active {
+            background-color: var(--error);
+            border-color: var(--error);
+            color: white;
+        }
+
+        /* Korrektur-Bereich (Dropdown) - Standardmäßig versteckt */
+        .correction-area {
+            flex-basis: 100%; /* Neue Zeile in der Flexbox */
+            background-color: #ffebee;
+            padding: 10px 15px;
+            border-radius: 6px;
+            display: none; /* Versteckt */
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .correction-label {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #d32f2f;
+        }
+
+        select.correction-select {
+            padding: 6px;
+            border: 1px solid #d32f2f;
+            border-radius: 4px;
+            font-size: 1rem;
+            background: white;
+        }
+
+        /* Visuelles Feedback nach Überprüfung */
+        .sentence-card.solved-correct {
+            border-left-color: var(--success);
+            background-color: #f1f8e9;
+        }
+
+        .sentence-card.solved-incorrect {
+            border-left-color: var(--error);
+        }
+
+        /* Steuerung */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .ctrl-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            min-width: 150px;
+            transition: opacity 0.2s;
+        }
+        .ctrl-btn:hover { opacity: 0.9; }
+
+        .btn-check { background-color: var(--primary); }
+        .btn-reset { background-color: #757575; }
+        .btn-solve { background-color: #ffb74d; color: #333; }
+
+        .feedback-area {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            min-height: 24px;
+        }
+
+        /* Mobile Optimierung */
+        @media (max-width: 600px) {
+            .sentence-card {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+            .assessment-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .correction-area {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            select.correction-select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Fehleranalyse</h1>
+    <div class="subtitle">Lesen Sie die Sätze. Ist das Verb korrekt verwendet? Wenn nicht, korrigieren Sie es.</div>
+
+    <div class="task-list" id="taskList">
+
+        <!-- Satz 1: FEHLER (Aktiv vs Passiv) -->
+        <div class="sentence-card" data-is-correct="false" data-correct-verb="слушал">
+            <div class="sentence-text">
+                1. Я вчера внимательно <span class="highlight-verb">слышал</span> лекцию.
+                <span class="translation">(Ich habe gestern aufmerksam die Vorlesung gehört/vernommen.)</span>
+            </div>
+            <div class="assessment-controls">
+                <button class="toggle-btn btn-correct" onclick="setStatus(this, true)">Richtig</button>
+                <button class="toggle-btn btn-wrong" onclick="setStatus(this, false)">Falsch</button>
+            </div>
+            <!-- Korrekturfeld (nur sichtbar wenn "Falsch" gewählt) -->
+            <div class="correction-area">
+                <span class="correction-label">Korrektur:</span>
+                <select class="correction-select">
+                    <option value="">(Wählen)</option>
+                    <option value="слушал">слушал</option>
+                    <option value="услышал">услышал</option>
+                    <option value="слышу">слышу</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Satz 2: RICHTIG -->
+        <div class="sentence-card" data-is-correct="true">
+            <div class="sentence-text">
+                2. Ты меня хорошо <span class="highlight-verb">слышишь</span>?
+                <span class="translation">(Hörst du mich gut? / Ist die Verbindung gut?)</span>
+            </div>
+            <div class="assessment-controls">
+                <button class="toggle-btn btn-correct" onclick="setStatus(this, true)">Richtig</button>
+                <button class="toggle-btn btn-wrong" onclick="setStatus(this, false)">Falsch</button>
+            </div>
+            <div class="correction-area">
+                <span class="correction-label">Korrektur:</span>
+                <select class="correction-select">
+                    <option value="">(Wählen)</option>
+                    <option value="слушаешь">слушаешь</option>
+                    <option value="слышал">слышал</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Satz 3: FEHLER (Plötzlich -> Passiv) -->
+        <div class="sentence-card" data-is-correct="false" data-correct-verb="слышал">
+            <div class="sentence-text">
+                3. Вдруг я <span class="highlight-verb">слушал</span> громкий звук.
+                <span class="translation">(Plötzlich hörte ich [aktiv zugehört] ein lautes Geräusch.)</span>
+            </div>
+            <div class="assessment-controls">
+                <button class="toggle-btn btn-correct" onclick="setStatus(this, true)">Richtig</button>
+                <button class="toggle-btn btn-wrong" onclick="setStatus(this, false)">Falsch</button>
+            </div>
+            <div class="correction-area">
+                <span class="correction-label">Korrektur:</span>
+                <select class="correction-select">
+                    <option value="">(Wählen)</option>
+                    <option value="слышал">слышал</option>
+                    <option value="слушаю">слушаю</option>
+                    <option value="услышу">услышу</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Satz 4: RICHTIG -->
+        <div class="sentence-card" data-is-correct="true">
+            <div class="sentence-text">
+                4. Мы часто <span class="highlight-verb">слушаем</span> радио в машине.
+                <span class="translation">(Wir hören oft Radio im Auto.)</span>
+            </div>
+            <div class="assessment-controls">
+                <button class="toggle-btn btn-correct" onclick="setStatus(this, true)">Richtig</button>
+                <button class="toggle-btn btn-wrong" onclick="setStatus(this, false)">Falsch</button>
+            </div>
+            <div class="correction-area">
+                <span class="correction-label">Korrektur:</span>
+                <select class="correction-select">
+                    <option value="">(Wählen)</option>
+                    <option value="слышим">слышим</option>
+                    <option value="слышали">слышали</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Satz 5: FEHLER (Oma -> Fähigkeit) -->
+        <div class="sentence-card" data-is-correct="false" data-correct-verb="слышит">
+            <div class="sentence-text">
+                5. Бабушка старая, она плохо <span class="highlight-verb">слушает</span>.
+                <span class="translation">(Oma ist alt, sie hört schlecht [akustisch].)</span>
+            </div>
+            <div class="assessment-controls">
+                <button class="toggle-btn btn-correct" onclick="setStatus(this, true)">Richtig</button>
+                <button class="toggle-btn btn-wrong" onclick="setStatus(this, false)">Falsch</button>
+            </div>
+            <div class="correction-area">
+                <span class="correction-label">Korrektur:</span>
+                <select class="correction-select">
+                    <option value="">(Wählen)</option>
+                    <option value="слышит">слышит</option>
+                    <option value="слышат">слышат</option>
+                    <option value="слушала">слушала</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Satz 6: FEHLER (Befehl -> Aktiv) -->
+        <div class="sentence-card" data-is-correct="false" data-correct-verb="Слушай">
+            <div class="sentence-text">
+                6. <span class="highlight-verb">Слышь</span> меня, когда я говорю!
+                <span class="translation">(Vernehme mich, wenn ich spreche!)</span>
+            </div>
+            <div class="assessment-controls">
+                <button class="toggle-btn btn-correct" onclick="setStatus(this, true)">Richtig</button>
+                <button class="toggle-btn btn-wrong" onclick="setStatus(this, false)">Falsch</button>
+            </div>
+            <div class="correction-area">
+                <span class="correction-label">Korrektur:</span>
+                <select class="correction-select">
+                    <option value="">(Wählen)</option>
+                    <option value="Слушайте">Слушайте</option>
+                    <option value="Слушай">Слушай</option>
+                    <option value="Слышишь">Слышишь</option>
+                </select>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="feedback-area" id="feedback"></div>
+
+    <div class="controls">
+        <button class="ctrl-btn btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="ctrl-btn btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="ctrl-btn btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    // Funktion zum Setzen des Status (Richtig/Falsch Buttons)
+    function setStatus(btn, isCorrectStatus) {
+        const card = btn.closest('.sentence-card');
+        const btns = card.querySelectorAll('.toggle-btn');
+        const correctionArea = card.querySelector('.correction-area');
+
+        // Buttons umschalten
+        btns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Korrekturbereich anzeigen/verstecken
+        if (!isCorrectStatus) {
+            correctionArea.style.display = 'flex';
+            // Markieren, dass Benutzer "Falsch" gewählt hat
+            card.dataset.userChoice = "wrong";
+        } else {
+            correctionArea.style.display = 'none';
+            // Dropdown zurücksetzen wenn man sich umentscheidet
+            card.querySelector('.correction-select').value = "";
+            card.dataset.userChoice = "correct";
+        }
+    }
+
+    // Auswertung
+    function checkAnswers() {
+        const cards = document.querySelectorAll('.sentence-card');
+        let correctCount = 0;
+        let allDecided = true;
+
+        cards.forEach(card => {
+            const isActuallyCorrect = card.dataset.isCorrect === "true";
+            const userChoice = card.dataset.userChoice; // "correct" or "wrong"
+            
+            // Reset styles
+            card.classList.remove('solved-correct', 'solved-incorrect');
+
+            // Hat der User überhaupt gewählt?
+            if (!userChoice) {
+                allDecided = false;
+                return;
+            }
+
+            let taskSolved = false;
+
+            if (isActuallyCorrect) {
+                // Satz ist richtig -> User muss "Richtig" gewählt haben
+                if (userChoice === "correct") {
+                    taskSolved = true;
+                }
+            } else {
+                // Satz ist falsch -> User muss "Falsch" gewählt haben UND das richtige Wort im Dropdown
+                const correctVerb = card.dataset.correctVerb;
+                const userVerb = card.querySelector('.correction-select').value;
+                
+                if (userChoice === "wrong" && userVerb === correctVerb) {
+                    taskSolved = true;
+                }
+            }
+
+            if (taskSolved) {
+                card.classList.add('solved-correct');
+                correctCount++;
+            } else {
+                card.classList.add('solved-incorrect');
+            }
+        });
+
+        const feedback = document.getElementById('feedback');
+        if (!allDecided) {
+            feedback.textContent = "Bitte bewerten Sie alle Sätze.";
+            feedback.style.color = "var(--text-color)";
+        } else if (correctCount === cards.length) {
+            feedback.textContent = "Hervorragend! Alle Fehler gefunden und korrigiert.";
+            feedback.style.color = "var(--success)";
+        } else {
+            feedback.textContent = `${correctCount} von ${cards.length} Aufgaben richtig gelöst.`;
+            feedback.style.color = "var(--error)";
+        }
+    }
+
+    function resetTask() {
+        const cards = document.querySelectorAll('.sentence-card');
+        cards.forEach(card => {
+            // UI zurücksetzen
+            card.classList.remove('solved-correct', 'solved-incorrect');
+            card.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+            card.querySelector('.correction-area').style.display = 'none';
+            card.querySelector('.correction-select').value = "";
+            delete card.dataset.userChoice;
+        });
+        document.getElementById('feedback').textContent = "";
+    }
+
+    function showSolution() {
+        const cards = document.querySelectorAll('.sentence-card');
+        cards.forEach(card => {
+            const isActuallyCorrect = card.dataset.isCorrect === "true";
+            
+            // Buttons zurücksetzen
+            card.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+
+            if (isActuallyCorrect) {
+                // "Richtig" Button aktivieren
+                card.querySelector('.btn-correct').classList.add('active');
+                card.querySelector('.correction-area').style.display = 'none';
+            } else {
+                // "Falsch" Button aktivieren
+                card.querySelector('.btn-wrong').classList.add('active');
+                const correctionArea = card.querySelector('.correction-area');
+                correctionArea.style.display = 'flex';
+                // Richtiges Verb setzen
+                card.querySelector('.correction-select').value = card.dataset.correctVerb;
+            }
+            
+            // Visuelles Feedback entfernen (neutraler Status)
+            card.classList.remove('solved-correct', 'solved-incorrect');
+        });
+        
+        const feedback = document.getElementById('feedback');
+        feedback.textContent = "Lösung angezeigt.";
+        feedback.style.color = "var(--primary)";
+    }
+</script>
+
+</body>
+</html>
