@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Endungen ergänzen</title>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --success: #4caf50;
+            --error: #f44336;
+            --input-bg: #fff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        /* Grammatik-Hinweis */
+        .hint-box {
+            background-color: #e3f2fd;
+            border-left: 5px solid #2196f3;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .hint-box strong { color: #0d47a1; }
+
+        /* Die Sätze */
+        .sentence-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .sentence-item {
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap; /* Damit es auf Handy umbricht */
+            transition: border-color 0.2s;
+        }
+
+        .sentence-item:hover {
+            border-color: #bdbdbd;
+        }
+
+        /* Der Verbstamm */
+        .stem {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* Das Dropdown für die Endung */
+        select.ending-select {
+            appearance: none; /* Standard-Pfeil entfernen für saubereren Look */
+            -webkit-appearance: none;
+            background-color: var(--input-bg);
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #333;
+            margin: 0 2px;
+            cursor: pointer;
+            min-width: 60px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        select.ending-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 5px rgba(63, 81, 181, 0.3);
+        }
+
+        /* Feedback Farben */
+        select.correct {
+            border-color: var(--success);
+            background-color: #e8f5e9;
+            color: #1b5e20;
+        }
+
+        select.incorrect {
+            border-color: var(--error);
+            background-color: #ffebee;
+            color: #b71c1c;
+        }
+
+        /* Kontext-Hinweis (Deutsch) */
+        .translation {
+            display: block;
+            width: 100%;
+            font-size: 0.85rem;
+            color: #757575;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        /* Buttons */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .ctrl-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            min-width: 140px;
+            transition: opacity 0.2s;
+        }
+        .ctrl-btn:hover { opacity: 0.9; }
+
+        .btn-check { background-color: var(--primary); }
+        .btn-reset { background-color: #757575; }
+        .btn-solve { background-color: #ffb74d; color: #333; }
+
+        .feedback-area {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            min-height: 24px;
+        }
+
+        /* Responsiv */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .sentence-item { font-size: 1rem; padding: 12px; }
+            select.ending-select { padding: 8px 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Endungen ergänzen</h1>
+    
+    <div class="hint-box">
+        <p><strong>Regel:</strong></p>
+        <ul style="margin: 0; padding-left: 20px;">
+            <li><strong>Слушать</strong> (zuhören) ist regelmäßig (1. Konjugation): Endungen mit <strong>-Е-</strong> (3. Plural -ЮТ).</li>
+            <li><strong>Слышать</strong> (hören) ist eine Ausnahme (2. Konjugation): Endungen mit <strong>-И-</strong> (3. Plural -АТ).</li>
+        </ul>
+    </div>
+
+    <div class="sentence-list">
+        
+        <!-- Satz 1: Du / Slyshat -->
+        <div class="sentence-item">
+            <span>Ты меня&nbsp;</span>
+            <span class="stem">слыш</span>
+            <select class="ending-select" data-correct="ишь">
+                <option value="">...</option>
+                <option value="ешь">-ешь</option>
+                <option value="ишь">-ишь</option>
+            </select>
+            <span>?</span>
+            <span class="translation">(Hörst du mich?)</span>
+        </div>
+
+        <!-- Satz 2: Wir / Slushat -->
+        <div class="sentence-item">
+            <span>Мы внимательно&nbsp;</span>
+            <span class="stem">слуша</span>
+            <select class="ending-select" data-correct="ем">
+                <option value="">...</option>
+                <option value="ем">-ем</option>
+                <option value="им">-им</option>
+            </select>
+            <span>&nbsp;лекцию.</span>
+            <span class="translation">(Wir hören der Vorlesung aufmerksam zu.)</span>
+        </div>
+
+        <!-- Satz 3: Sie (Plural) / Slyshat (Achtung Falle!) -->
+        <div class="sentence-item">
+            <span>Они плохо&nbsp;</span>
+            <span class="stem">слыш</span>
+            <select class="ending-select" data-correct="ат">
+                <option value="">...</option>
+                <option value="ут">-ут</option>
+                <option value="ют">-ют</option>
+                <option value="ат">-ат</option>
+                <option value="ят">-ят</option>
+            </select>
+            <span>.</span>
+            <span class="translation">(Sie hören schlecht.)</span>
+        </div>
+
+        <!-- Satz 4: Er / Slushat -->
+        <div class="sentence-item">
+            <span>Он&nbsp;</span>
+            <span class="stem">слуша</span>
+            <select class="ending-select" data-correct="ет">
+                <option value="">...</option>
+                <option value="ет">-ет</option>
+                <option value="ит">-ит</option>
+            </select>
+            <span>&nbsp;музыку.</span>
+            <span class="translation">(Er hört Musik.)</span>
+        </div>
+
+        <!-- Satz 5: Ihr / Slyshat -->
+        <div class="sentence-item">
+            <span>Вы&nbsp;</span>
+            <span class="stem">слыш</span>
+            <select class="ending-select" data-correct="ите">
+                <option value="">...</option>
+                <option value="ете">-ете</option>
+                <option value="ите">-ите</option>
+            </select>
+            <span>&nbsp;этот шум?</span>
+            <span class="translation">(Hört ihr diesen Lärm?)</span>
+        </div>
+
+        <!-- Satz 6: Sie (Plural) / Slushat -->
+        <div class="sentence-item">
+            <span>Дети&nbsp;</span>
+            <span class="stem">слуша</span>
+            <select class="ending-select" data-correct="ют">
+                <option value="">...</option>
+                <option value="ут">-ут</option>
+                <option value="ют">-ют</option>
+                <option value="ат">-ат</option>
+                <option value="ят">-ят</option>
+            </select>
+            <span>&nbsp;сказку.</span>
+            <span class="translation">(Die Kinder hören sich ein Märchen an.)</span>
+        </div>
+
+        <!-- Satz 7: Ich / Slyshat -->
+        <div class="sentence-item">
+            <span>Я ничего не&nbsp;</span>
+            <span class="stem">слыш</span>
+            <select class="ending-select" data-correct="у">
+                <option value="">...</option>
+                <option value="у">-у</option>
+                <option value="ю">-ю</option>
+            </select>
+            <span>.</span>
+            <span class="translation">(Ich höre nichts.)</span>
+        </div>
+
+        <!-- Satz 8: Es (Das Radio) / Slushat (Vergangenheit/Neutral - Zusatzaufgabe) -->
+        <div class="sentence-item">
+            <span>Она&nbsp;</span>
+            <span class="stem">слуша</span>
+            <select class="ending-select" data-correct="ет">
+                <option value="">...</option>
+                <option value="ет">-ет</option>
+                <option value="ит">-ит</option>
+            </select>
+            <span>&nbsp;подкаст.</span>
+            <span class="translation">(Sie hört einen Podcast.)</span>
+        </div>
+
+    </div>
+
+    <div class="feedback-area" id="feedback"></div>
+
+    <div class="controls">
+        <button class="ctrl-btn btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="ctrl-btn btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="ctrl-btn btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    function checkAnswers() {
+        const selects = document.querySelectorAll('.ending-select');
+        let correctCount = 0;
+        let allFilled = true;
+
+        selects.forEach(select => {
+            const val = select.value;
+            const correct = select.getAttribute('data-correct');
+            
+            // Vorherigen Status löschen
+            select.classList.remove('correct', 'incorrect');
+
+            if (val === "") {
+                allFilled = false;
+            } else if (val === correct) {
+                select.classList.add('correct');
+                correctCount++;
+            } else {
+                select.classList.add('incorrect');
+            }
+        });
+
+        const feedback = document.getElementById('feedback');
+        if (!allFilled) {
+            feedback.textContent = "Bitte füllen Sie alle Lücken aus.";
+            feedback.style.color = "var(--text-color)";
+        } else if (correctCount === selects.length) {
+            feedback.textContent = "Perfekt! Alle Endungen stimmen.";
+            feedback.style.color = "var(--success)";
+        } else {
+            feedback.textContent = `${correctCount} von ${selects.length} richtig. Achten Sie auf E vs. I!`;
+            feedback.style.color = "var(--error)";
+        }
+    }
+
+    function resetTask() {
+        const selects = document.querySelectorAll('.ending-select');
+        selects.forEach(select => {
+            select.value = "";
+            select.classList.remove('correct', 'incorrect');
+        });
+        document.getElementById('feedback').textContent = "";
+    }
+
+    function showSolution() {
+        const selects = document.querySelectorAll('.ending-select');
+        selects.forEach(select => {
+            select.value = select.getAttribute('data-correct');
+            select.classList.remove('incorrect');
+            select.classList.add('correct');
+        });
+        
+        const feedback = document.getElementById('feedback');
+        feedback.textContent = "Lösung angezeigt.";
+        feedback.style.color = "var(--primary)";
+    }
+</script>
+
+</body>
+</html>
