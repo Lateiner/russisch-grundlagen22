@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Lückentext (Wortschatz)</title>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --success: #4caf50;
+            --error: #f44336;
+            --input-border: #ccc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        /* Anleitung */
+        .instruction-box {
+            background-color: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary);
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        /* Stil für den Lückentext */
+        .cloze-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .cloze-item {
+            background: #fff;
+            padding: 15px 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1.15rem; /* Etwas größer für Lesbarkeit */
+            line-height: 2; /* Höherer Zeilenabstand für Dropdowns */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: border-color 0.3s;
+        }
+
+        .cloze-item:hover {
+            border-color: #b0bec5;
+        }
+
+        /* Das Dropdown in der Lücke */
+        select.cloze-select {
+            display: inline-block;
+            width: auto;
+            min-width: 120px;
+            padding: 5px 10px;
+            margin: 0 5px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            color: var(--primary);
+            font-weight: bold;
+            border: 0;
+            border-bottom: 2px solid var(--input-border);
+            background-color: transparent;
+            cursor: pointer;
+            border-radius: 0;
+            -webkit-appearance: none; /* Entfernt Standard-Style auf Safari */
+            appearance: none;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        select.cloze-select:focus {
+            outline: none;
+            border-bottom-color: var(--primary);
+            background-color: #f0f4c3; /* Leichtes Highlight bei Fokus */
+        }
+
+        /* Feedback-Farben */
+        select.correct {
+            border-bottom-color: var(--success);
+            color: var(--success);
+            background-color: rgba(76, 175, 80, 0.1);
+            border-radius: 4px;
+        }
+
+        select.incorrect {
+            border-bottom-color: var(--error);
+            color: var(--error);
+            background-color: rgba(244, 67, 54, 0.1);
+            border-radius: 4px;
+        }
+
+        /* Übersetzung / Kontext */
+        .translation {
+            display: block;
+            margin-top: 5px;
+            font-size: 0.85rem;
+            color: #757575;
+            font-style: italic;
+        }
+
+        /* Buttons */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .ctrl-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            min-width: 150px;
+            transition: opacity 0.2s;
+        }
+        .ctrl-btn:hover { opacity: 0.9; }
+
+        .btn-check { background-color: var(--primary); }
+        .btn-reset { background-color: #757575; }
+        .btn-solve { background-color: #ffb74d; color: #333; }
+
+        .feedback-area {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            min-height: 24px;
+        }
+
+        /* Responsives Design */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .cloze-item { 
+                padding: 15px; 
+                font-size: 1rem;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            select.cloze-select {
+                width: 100%; /* Volle Breite auf Handy für einfache Auswahl */
+                margin: 10px 0;
+                border: 1px solid #ccc; /* Rahmen statt nur Unterstrich auf Handy */
+                border-radius: 4px;
+                background-color: #fff;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Lückentext: Wortschatz im Kontext</h1>
+    <div class="subtitle">Wählen Sie das passende Verb (слушать vs. слышать) für den Kontext.</div>
+    
+    <div class="instruction-box">
+        <strong>Hinweis:</strong> Achten Sie genau auf den Kontext.
+        <ul>
+            <li>Geht es um eine bewusste Handlung? (Musik, Vorlesung) &rarr; <strong>слушать</strong></li>
+            <li>Geht es um eine Wahrnehmung oder Fähigkeit? (Lärm, Stimme, Taubheit) &rarr; <strong>слышать</strong></li>
+        </ul>
+    </div>
+
+    <div class="cloze-list">
+
+        <!-- Satz 1: Infinitiv / Aktiv -->
+        <div class="cloze-item">
+            <span>1. Я очень люблю </span>
+            <select class="cloze-select" data-correct="слушать">
+                <option value="">(wählen)</option>
+                <option value="слушать">слушать</option>
+                <option value="слышать">слышать</option>
+            </select>
+            <span> классическую музыку.</span>
+            <span class="translation">(Ich liebe es, klassische Musik zu hören.)</span>
+        </div>
+
+        <!-- Satz 2: Präsens / Passiv (Fähigkeit) -->
+        <div class="cloze-item">
+            <span>2. Алло! Ты меня </span>
+            <select class="cloze-select" data-correct="слышишь">
+                <option value="">(wählen)</option>
+                <option value="слушаешь">слушаешь</option>
+                <option value="слышишь">слышишь</option>
+            </select>
+            <span>? Связь плохая.</span>
+            <span class="translation">(Hallo! Hörst du mich? Die Verbindung ist schlecht.)</span>
+        </div>
+
+        <!-- Satz 3: Imperativ / Aktiv -->
+        <div class="cloze-item">
+            <span>3. Пожалуйста, </span>
+            <select class="cloze-select" data-correct="слушай">
+                <option value="">(wählen)</option>
+                <option value="слушай">слушай</option>
+                <option value="слышь">слышь</option>
+            </select>
+            <span> меня внимательно!</span>
+            <span class="translation">(Bitte hör mir aufmerksam zu!)</span>
+        </div>
+
+        <!-- Satz 4: Vergangenheit / Passiv (Plötzlich) -->
+        <div class="cloze-item">
+            <span>4. Вдруг мы </span>
+            <select class="cloze-select" data-correct="услышали">
+                <option value="">(wählen)</option>
+                <option value="слушали">слушали</option>
+                <option value="услышали">услышали (слышали)</option>
+            </select>
+            <span> странный крик.</span>
+            <span class="translation">(Plötzlich hörten/vernahmen wir einen seltsamen Schrei.)</span>
+        </div>
+
+        <!-- Satz 5: Präsens / Aktiv (Prozess) -->
+        <div class="cloze-item">
+            <span>5. Студенты сидят и </span>
+            <select class="cloze-select" data-correct="слушают">
+                <option value="">(wählen)</option>
+                <option value="слушают">слушают</option>
+                <option value="слышат">слышат</option>
+            </select>
+            <span> лекцию профессора.</span>
+            <span class="translation">(Die Studenten sitzen und hören der Vorlesung des Professors zu.)</span>
+        </div>
+
+        <!-- Satz 6: Präsens / Passiv (Fähigkeit) -->
+        <div class="cloze-item">
+            <span>6. Мой дедушка старый, он плохо </span>
+            <select class="cloze-select" data-correct="слышит">
+                <option value="">(wählen)</option>
+                <option value="слушает">слушает</option>
+                <option value="слышит">слышит</option>
+            </select>
+            <span>.</span>
+            <span class="translation">(Mein Opa ist alt, er hört schlecht.)</span>
+        </div>
+
+        <!-- Satz 7: Präsens / Aktiv (Verneinung der Absicht) -->
+        <div class="cloze-item">
+            <span>7. Я не хочу это </span>
+            <select class="cloze-select" data-correct="слушать">
+                <option value="">(wählen)</option>
+                <option value="слушать">слушать</option>
+                <option value="слышать">слышать</option>
+            </select>
+            <span>! Это неправда.</span>
+            <span class="translation">(Ich will mir das nicht anhören! Das ist nicht wahr.)</span>
+        </div>
+
+        <!-- Satz 8: Information erhalten (von/über) -->
+        <div class="cloze-item">
+            <span>8. Вы </span>
+            <select class="cloze-select" data-correct="слышали">
+                <option value="">(wählen)</option>
+                <option value="слушали">слушали</option>
+                <option value="слышали">слышали</option>
+            </select>
+            <span> о новой выставке?</span>
+            <span class="translation">(Habt ihr von der neuen Ausstellung gehört?)</span>
+        </div>
+
+    </div>
+
+    <div class="feedback-area" id="feedback"></div>
+
+    <div class="controls">
+        <button class="ctrl-btn btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="ctrl-btn btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="ctrl-btn btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    function checkAnswers() {
+        const selects = document.querySelectorAll('.cloze-select');
+        let correctCount = 0;
+        let allFilled = true;
+
+        selects.forEach(select => {
+            const val = select.value;
+            const correct = select.getAttribute('data-correct');
+
+            // Reset vorheriger Status
+            select.classList.remove('correct', 'incorrect');
+
+            if (val === "") {
+                allFilled = false;
+            } else if (val === correct) {
+                select.classList.add('correct');
+                correctCount++;
+            } else {
+                select.classList.add('incorrect');
+            }
+        });
+
+        const feedback = document.getElementById('feedback');
+        if (!allFilled) {
+            feedback.textContent = "Bitte füllen Sie alle Lücken aus.";
+            feedback.style.color = "var(--text-color)";
+        } else if (correctCount === selects.length) {
+            feedback.textContent = "Hervorragend! Wortschatz und Kontext sitzen.";
+            feedback.style.color = "var(--success)";
+        } else {
+            feedback.textContent = `${correctCount} von ${selects.length} richtig. Überprüfen Sie den Kontext.`;
+            feedback.style.color = "var(--error)";
+        }
+    }
+
+    function resetTask() {
+        const selects = document.querySelectorAll('.cloze-select');
+        selects.forEach(select => {
+            select.value = "";
+            select.classList.remove('correct', 'incorrect');
+        });
+        document.getElementById('feedback').textContent = "";
+    }
+
+    function showSolution() {
+        const selects = document.querySelectorAll('.cloze-select');
+        selects.forEach(select => {
+            select.value = select.getAttribute('data-correct');
+            select.classList.remove('incorrect');
+            select.classList.add('correct');
+        });
+        
+        const feedback = document.getElementById('feedback');
+        feedback.textContent = "Lösung angezeigt.";
+        feedback.style.color = "var(--primary)";
+    }
+</script>
+
+</body>
+</html>
